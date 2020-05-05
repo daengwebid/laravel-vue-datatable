@@ -19,7 +19,12 @@
             </div>
         </div>
         <div class="col-md-12">
-            <b-table striped hover :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" show-empty></b-table>   
+            <b-table striped hover :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" show-empty>
+                <template v-slot:cell(actions)="row">
+                    <a :href="editUrl" v-if="editUrl" class="btn btn-warning btn-sm">Edit</a>
+                    <button class="btn btn-danger btn-sm" @click="openDeleteModal(row)">Delete</button>
+                </template>
+            </b-table>   
         </div>
         <div class="col-md-6">
             <p>Showing {{ meta.from }} to {{ meta.to }} of {{ meta.total }} items</p>
@@ -34,6 +39,28 @@
                 aria-controls="dw-datatable"
             ></b-pagination>
         </div>
+
+        <b-modal v-model="deleteModal" :title="title">
+            <p>Kamu yakin ingin menghapus data ini?</p>
+            <template v-slot:modal-footer>
+                <div class="w-100 float-right">
+                    <b-button
+                        variant="secondary"
+                        size="sm"
+                        @click="deleteModal=false"
+                    >
+                        Close
+                    </b-button>
+                    <b-button
+                        variant="primary"
+                        size="sm"
+                        @click="deleteModalButton"
+                    >
+                        Delete
+                    </b-button>
+                </div>
+            </template>
+        </b-modal>
     </div>
 </template>
 
@@ -52,12 +79,22 @@ export default {
         },
         meta: {
             required: true
+        },
+        title: {
+            type: String,
+            default: "Delete Modal"
+        },
+        editUrl: {
+            type: String,
+            default: null
         }
     },
     data() {
         return {
             sortBy: null,
-            sortDesc: false
+            sortDesc: false,
+            deleteModal: false,
+            selected: null
         }
     },
     watch: {
@@ -84,6 +121,14 @@ export default {
         search: _.debounce(function (e) {
             this.$emit('search', e.target.value)
         }, 500),
+        openDeleteModal(row) {
+            this.deleteModal = true
+            this.selected = row.item
+        },
+        deleteModalButton() {
+            this.$emit('delete', this.selected)
+            this.deleteModal = false
+        }
     }
 }
 </script>

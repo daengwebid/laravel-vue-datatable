@@ -1935,6 +1935,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1955,6 +1958,9 @@ __webpack_require__.r(__webpack_exports__);
       }, {
         key: 'created_at',
         sortable: true
+      }, {
+        key: 'actions',
+        sortable: false
       }],
       items: [],
       meta: [],
@@ -1993,6 +1999,13 @@ __webpack_require__.r(__webpack_exports__);
         };
       });
     },
+    deletePostData: function deletePostData(id) {
+      var _this2 = this;
+
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a["delete"]("/api/posts/".concat(id)).then(function () {
+        return _this2.loadPostsData();
+      });
+    },
     handlePerPage: function handlePerPage(val) {
       this.per_page = val;
       this.loadPostsData();
@@ -2009,6 +2022,9 @@ __webpack_require__.r(__webpack_exports__);
       this.sortBy = val.sortBy;
       this.sortByDesc = val.sortDesc;
       this.loadPostsData();
+    },
+    handleDelete: function handleDelete(val) {
+      this.deletePostData(val.id);
     }
   }
 });
@@ -2065,6 +2081,33 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
@@ -2078,12 +2121,22 @@ __webpack_require__.r(__webpack_exports__);
     },
     meta: {
       required: true
+    },
+    title: {
+      type: String,
+      "default": "Delete Modal"
+    },
+    editUrl: {
+      type: String,
+      "default": null
     }
   },
   data: function data() {
     return {
       sortBy: null,
-      sortDesc: false
+      sortDesc: false,
+      deleteModal: false,
+      selected: null
     };
   },
   watch: {
@@ -2109,7 +2162,15 @@ __webpack_require__.r(__webpack_exports__);
     },
     search: lodash__WEBPACK_IMPORTED_MODULE_0___default.a.debounce(function (e) {
       this.$emit('search', e.target.value);
-    }, 500)
+    }, 500),
+    openDeleteModal: function openDeleteModal(row) {
+      this.deleteModal = true;
+      this.selected = row.item;
+    },
+    deleteModalButton: function deleteModalButton() {
+      this.$emit('delete', this.selected);
+      this.deleteModal = false;
+    }
   }
 });
 
@@ -56945,13 +57006,16 @@ var render = function() {
                   attrs: {
                     items: _vm.items,
                     fields: _vm.fields,
-                    meta: _vm.meta
+                    meta: _vm.meta,
+                    editUrl: "/a/b",
+                    title: "Delete Posts"
                   },
                   on: {
                     per_page: _vm.handlePerPage,
                     pagination: _vm.handlePagination,
                     search: _vm.handleSearch,
-                    sort: _vm.handleSort
+                    sort: _vm.handleSort,
+                    delete: _vm.handleDelete
                   }
                 })
               ],
@@ -56994,142 +57058,240 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-md-4 mb-2" }, [
-      _c("div", { staticClass: "form-inline" }, [
-        _c("label", { staticClass: "mr-2" }, [_vm._v("Showing")]),
-        _vm._v(" "),
-        _c(
-          "select",
-          {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.meta.per_page,
-                expression: "meta.per_page"
+  return _c(
+    "div",
+    { staticClass: "row" },
+    [
+      _c("div", { staticClass: "col-md-4 mb-2" }, [
+        _c("div", { staticClass: "form-inline" }, [
+          _c("label", { staticClass: "mr-2" }, [_vm._v("Showing")]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.meta.per_page,
+                  expression: "meta.per_page"
+                }
+              ],
+              staticClass: "form-control",
+              on: {
+                change: [
+                  function($event) {
+                    var $$selectedVal = Array.prototype.filter
+                      .call($event.target.options, function(o) {
+                        return o.selected
+                      })
+                      .map(function(o) {
+                        var val = "_value" in o ? o._value : o.value
+                        return val
+                      })
+                    _vm.$set(
+                      _vm.meta,
+                      "per_page",
+                      $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+                    )
+                  },
+                  _vm.loadPerPage
+                ]
               }
-            ],
+            },
+            [
+              _c("option", { attrs: { value: "10" } }, [_vm._v("10")]),
+              _vm._v(" "),
+              _c("option", { attrs: { value: "25" } }, [_vm._v("25")]),
+              _vm._v(" "),
+              _c("option", { attrs: { value: "50" } }, [_vm._v("50")]),
+              _vm._v(" "),
+              _c("option", { attrs: { value: "100" } }, [_vm._v("100")])
+            ]
+          ),
+          _vm._v(" "),
+          _c("label", { staticClass: "ml-2" }, [_vm._v("Entries")])
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-4 offset-md-4" }, [
+        _c("div", { staticClass: "form-inline float-right" }, [
+          _c("label", { staticClass: "mr-2" }, [_vm._v("Search")]),
+          _vm._v(" "),
+          _c("input", {
             staticClass: "form-control",
+            attrs: { type: "text" },
+            on: { input: _vm.search }
+          })
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "col-md-12" },
+        [
+          _c("b-table", {
+            attrs: {
+              striped: "",
+              hover: "",
+              items: _vm.items,
+              fields: _vm.fields,
+              "sort-by": _vm.sortBy,
+              "sort-desc": _vm.sortDesc,
+              "show-empty": ""
+            },
             on: {
-              change: [
-                function($event) {
-                  var $$selectedVal = Array.prototype.filter
-                    .call($event.target.options, function(o) {
-                      return o.selected
-                    })
-                    .map(function(o) {
-                      var val = "_value" in o ? o._value : o.value
-                      return val
-                    })
-                  _vm.$set(
-                    _vm.meta,
-                    "per_page",
-                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+              "update:sortBy": function($event) {
+                _vm.sortBy = $event
+              },
+              "update:sort-by": function($event) {
+                _vm.sortBy = $event
+              },
+              "update:sortDesc": function($event) {
+                _vm.sortDesc = $event
+              },
+              "update:sort-desc": function($event) {
+                _vm.sortDesc = $event
+              }
+            },
+            scopedSlots: _vm._u([
+              {
+                key: "cell(actions)",
+                fn: function(row) {
+                  return [
+                    _vm.editUrl
+                      ? _c(
+                          "a",
+                          {
+                            staticClass: "btn btn-warning btn-sm",
+                            attrs: { href: _vm.editUrl }
+                          },
+                          [_vm._v("Edit")]
+                        )
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-danger btn-sm",
+                        on: {
+                          click: function($event) {
+                            return _vm.openDeleteModal(row)
+                          }
+                        }
+                      },
+                      [_vm._v("Delete")]
+                    )
+                  ]
+                }
+              }
+            ])
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("p", [
+          _vm._v(
+            "Showing " +
+              _vm._s(_vm.meta.from) +
+              " to " +
+              _vm._s(_vm.meta.to) +
+              " of " +
+              _vm._s(_vm.meta.total) +
+              " items"
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "col-md-6" },
+        [
+          _c("b-pagination", {
+            attrs: {
+              "total-rows": _vm.meta.total,
+              "per-page": _vm.meta.per_page,
+              align: "right",
+              "aria-controls": "dw-datatable"
+            },
+            on: { change: _vm.changePage },
+            model: {
+              value: _vm.meta.current_page,
+              callback: function($$v) {
+                _vm.$set(_vm.meta, "current_page", $$v)
+              },
+              expression: "meta.current_page"
+            }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "b-modal",
+        {
+          attrs: { title: _vm.title },
+          scopedSlots: _vm._u([
+            {
+              key: "modal-footer",
+              fn: function() {
+                return [
+                  _c(
+                    "div",
+                    { staticClass: "w-100 float-right" },
+                    [
+                      _c(
+                        "b-button",
+                        {
+                          attrs: { variant: "secondary", size: "sm" },
+                          on: {
+                            click: function($event) {
+                              _vm.deleteModal = false
+                            }
+                          }
+                        },
+                        [
+                          _vm._v(
+                            "\n                    Close\n                "
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "b-button",
+                        {
+                          attrs: { variant: "primary", size: "sm" },
+                          on: { click: _vm.deleteModalButton }
+                        },
+                        [
+                          _vm._v(
+                            "\n                    Delete\n                "
+                          )
+                        ]
+                      )
+                    ],
+                    1
                   )
-                },
-                _vm.loadPerPage
-              ]
+                ]
+              },
+              proxy: true
             }
-          },
-          [
-            _c("option", { attrs: { value: "10" } }, [_vm._v("10")]),
-            _vm._v(" "),
-            _c("option", { attrs: { value: "25" } }, [_vm._v("25")]),
-            _vm._v(" "),
-            _c("option", { attrs: { value: "50" } }, [_vm._v("50")]),
-            _vm._v(" "),
-            _c("option", { attrs: { value: "100" } }, [_vm._v("100")])
-          ]
-        ),
-        _vm._v(" "),
-        _c("label", { staticClass: "ml-2" }, [_vm._v("Entries")])
-      ])
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "col-md-4 offset-md-4" }, [
-      _c("div", { staticClass: "form-inline float-right" }, [
-        _c("label", { staticClass: "mr-2" }, [_vm._v("Search")]),
-        _vm._v(" "),
-        _c("input", {
-          staticClass: "form-control",
-          attrs: { type: "text" },
-          on: { input: _vm.search }
-        })
-      ])
-    ]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "col-md-12" },
-      [
-        _c("b-table", {
-          attrs: {
-            striped: "",
-            hover: "",
-            items: _vm.items,
-            fields: _vm.fields,
-            "sort-by": _vm.sortBy,
-            "sort-desc": _vm.sortDesc,
-            "show-empty": ""
-          },
-          on: {
-            "update:sortBy": function($event) {
-              _vm.sortBy = $event
-            },
-            "update:sort-by": function($event) {
-              _vm.sortBy = $event
-            },
-            "update:sortDesc": function($event) {
-              _vm.sortDesc = $event
-            },
-            "update:sort-desc": function($event) {
-              _vm.sortDesc = $event
-            }
-          }
-        })
-      ],
-      1
-    ),
-    _vm._v(" "),
-    _c("div", { staticClass: "col-md-6" }, [
-      _c("p", [
-        _vm._v(
-          "Showing " +
-            _vm._s(_vm.meta.from) +
-            " to " +
-            _vm._s(_vm.meta.to) +
-            " of " +
-            _vm._s(_vm.meta.total) +
-            " items"
-        )
-      ])
-    ]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "col-md-6" },
-      [
-        _c("b-pagination", {
-          attrs: {
-            "total-rows": _vm.meta.total,
-            "per-page": _vm.meta.per_page,
-            align: "right",
-            "aria-controls": "dw-datatable"
-          },
-          on: { change: _vm.changePage },
+          ]),
           model: {
-            value: _vm.meta.current_page,
+            value: _vm.deleteModal,
             callback: function($$v) {
-              _vm.$set(_vm.meta, "current_page", $$v)
+              _vm.deleteModal = $$v
             },
-            expression: "meta.current_page"
+            expression: "deleteModal"
           }
-        })
-      ],
-      1
-    )
-  ])
+        },
+        [_c("p", [_vm._v("Kamu yakin ingin menghapus data ini?")])]
+      )
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true

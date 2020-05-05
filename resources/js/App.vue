@@ -11,10 +11,13 @@
                             :items="items" 
                             :fields="fields" 
                             :meta="meta" 
+                            :editUrl="'/a/b'"
+                            :title="'Delete Posts'"
                             @per_page="handlePerPage" 
                             @pagination="handlePagination" 
                             @search="handleSearch" 
                             @sort="handleSort"
+                            @delete="handleDelete"
                         />
                     </div>
                 </div>
@@ -36,7 +39,8 @@ export default {
                 {key: 'title', sortable: true},
                 {key: 'author', sortable: true},
                 {key: 'category', sortable: true},
-                {key: 'created_at', sortable: true}
+                {key: 'created_at', sortable: true},
+                {key: 'actions', sortable: false},
             ],
             items: [],
             meta: [],
@@ -74,6 +78,9 @@ export default {
                 }
             })
         },
+        deletePostData(id) {
+            axios.delete(`/api/posts/${id}`).then(() => this.loadPostsData())
+        },
         handlePerPage(val) {
             this.per_page = val
             this.loadPostsData()
@@ -91,6 +98,9 @@ export default {
             this.sortByDesc = val.sortDesc
 
             this.loadPostsData()
+        },
+        handleDelete(val) {
+            this.deletePostData(val.id)
         }
     }
 }

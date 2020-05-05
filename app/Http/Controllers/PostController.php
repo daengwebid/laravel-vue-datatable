@@ -17,4 +17,11 @@ class PostController extends Controller
         })->paginate(request()->per_page);
         return response()->json(['status' => 'success', 'data' => $posts]);
     }
+
+    public function destroy($id)
+    {
+        $post = Post::find($id);
+        $post->delete();
+        return response()->json(['status' => 'success']);
+    }
 }
